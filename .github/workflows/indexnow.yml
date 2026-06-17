@@ -1,0 +1,47 @@
+name: Daily IndexNow
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # каждый день в 9:00 по Москве (UTC+3)
+  workflow_dispatch:  # можно запустить вручную
+
+jobs:
+  indexnow:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send IndexNow
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          YEAR=$(date +%Y)
+          MONTH=$(date +%m)
+          DAY=$(date +%d)
+          
+          # Ищем статью с сегодняшней датой
+          SLUGS=(
+            "2026-06-18:staro-tatarskaya-sloboda"
+            "2026-06-19:kazan-za-odin-den"
+            "2026-06-20:ekskursii-dlya-detey-kazan"
+            "2026-06-21:nochnye-ekskursii-kazan"
+            "2026-06-22:individualnyy-gid-kazan"
+            "2026-06-23:ozero-kaban-kazan"
+            "2026-06-24:tatarskaya-kuhnya-kazan"
+            "2026-06-25:kazan-kreml-history"
+            "2026-06-26:kazan-s-detmi-chto-posmotret"
+            "2026-06-27:ekskursii-kazan-vykhodnye"
+            "2026-06-28:neobychnye-ekskursii-kazan"
+            "2026-06-29:kazan-sviyazhsk-ekskursiya"
+            "2026-06-30:luchshie-gidy-kazan"
+          )
+          
+          for ENTRY in "${SLUGS[@]}"; do
+            POST_DATE="${ENTRY%%:*}"
+            SLUG="${ENTRY##*:}"
+            
+            if [ "$POST_DATE" = "$DATE" ]; then
+              URL="https://ekskursii-kazan.github.io/${YEAR}/${MONTH}/${DAY}/${SLUG}.html"
+              echo "Отправляем: $URL"
+              curl -s "https://yandex.ru/indexnow?url=${URL}&key=ekskursii-kazan-a7f3d9b2c1e8"
+              echo ""
+              echo "Готово!"
+            fi
+          done
